@@ -2,7 +2,6 @@ package routes
 
 import (
 	"context"
-	"errors"
 	"net/http"
 	"time"
 
@@ -11,6 +10,7 @@ import (
 	"github.com/l1f/mahlzeit/internal/app"
 	"github.com/l1f/mahlzeit/internal/http/httpreq"
 	"github.com/l1f/mahlzeit/internal/zaphelper"
+	"github.com/l1f/mahlzeit/web/assets"
 	"github.com/l1f/mahlzeit/web/templates/pages"
 )
 
@@ -37,17 +37,14 @@ func All(c *app.Application) *chi.Mux {
 	r.Use(middleware.Timeout(60 * time.Second))
 
 	// Add a file server for the compiled assets.
-	// In the future, those should be embedded into the binary to simplify the deployment.
-	assetsServer := http.FileServer(http.Dir("./assets/"))
-	r.Handle("/assets/*", http.StripPrefix("/assets", assetsServer))
+	assets.Mount(r)
 
 	w := appWrapper{c}
 	r.Route("/", func(r chi.Router) {
 		r.Get("/", errorWrapper(func(w http.ResponseWriter, r *http.Request) error {
 			component := pages.Home()
-			return errors.New("Test")
-			return component.Render(context.TODO(), w)
 
+			return component.Render(context.TODO(), w)
 		}))
 	})
 	r.Route("/recipes", func(r chi.Router) {
