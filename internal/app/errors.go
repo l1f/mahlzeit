@@ -3,7 +3,7 @@ package app
 import (
 	"net/http"
 
-	"codeberg.org/mahlzeit/mahlzeit/internal/zaphelper"
+	"github.com/l1f/mahlzeit/internal/zaphelper"
 	"github.com/carlmjohnson/resperr"
 	"go.uber.org/zap"
 )

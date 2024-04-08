@@ -6,9 +6,9 @@ import (
 	"strconv"
 	"time"
 
-	"codeberg.org/mahlzeit/mahlzeit/internal/app"
-	"codeberg.org/mahlzeit/mahlzeit/internal/http/htmx"
-	"codeberg.org/mahlzeit/mahlzeit/internal/http/httpreq"
+	"github.com/l1f/mahlzeit/internal/app"
+	"github.com/l1f/mahlzeit/internal/http/htmx"
+	"github.com/l1f/mahlzeit/internal/http/httpreq"
 	"github.com/go-chi/chi/v5"
 	"github.com/robfig/bind"
 )

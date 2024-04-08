@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"time"
 
-	"codeberg.org/mahlzeit/mahlzeit/db/queries"
+	"github.com/l1f/mahlzeit/db/queries"
 	"github.com/jackc/pgtype"
 )
 

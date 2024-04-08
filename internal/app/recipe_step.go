@@ -6,8 +6,8 @@ import (
 	"fmt"
 	"net/http"
 
-	"codeberg.org/mahlzeit/mahlzeit/db/queries"
-	"codeberg.org/mahlzeit/mahlzeit/internal/pghelper"
+	"github.com/l1f/mahlzeit/db/queries"
+	"github.com/l1f/mahlzeit/internal/pghelper"
 	"github.com/carlmjohnson/resperr"
 	"github.com/jackc/pgconn"
 	"github.com/jackc/pgx/v4"

@@ -1,8 +1,8 @@
 package app
 
 import (
-	"codeberg.org/mahlzeit/mahlzeit/db/queries"
-	"codeberg.org/mahlzeit/mahlzeit/internal/templates"
+	"github.com/l1f/mahlzeit/db/queries"
+	"github.com/l1f/mahlzeit/internal/templates"
 	"go.uber.org/zap"
 )
 

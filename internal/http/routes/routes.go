@@ -1,14 +1,17 @@
 package routes
 
 import (
+	"context"
+	"errors"
 	"net/http"
 	"time"
 
-	"codeberg.org/mahlzeit/mahlzeit/internal/app"
-	"codeberg.org/mahlzeit/mahlzeit/internal/http/httpreq"
-	"codeberg.org/mahlzeit/mahlzeit/internal/zaphelper"
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/chi/v5/middleware"
+	"github.com/l1f/mahlzeit/internal/app"
+	"github.com/l1f/mahlzeit/internal/http/httpreq"
+	"github.com/l1f/mahlzeit/internal/zaphelper"
+	"github.com/l1f/mahlzeit/web/templates/pages"
 )
 
 // All returns the [chi.Mux] that is going to be used for our HTTP handlers.
@@ -39,6 +42,14 @@ func All(c *app.Application) *chi.Mux {
 	r.Handle("/assets/*", http.StripPrefix("/assets", assetsServer))
 
 	w := appWrapper{c}
+	r.Route("/", func(r chi.Router) {
+		r.Get("/", errorWrapper(func(w http.ResponseWriter, r *http.Request) error {
+			component := pages.Home()
+			return errors.New("Test")
+			return component.Render(context.TODO(), w)
+
+		}))
+	})
 	r.Route("/recipes", func(r chi.Router) {
 		r.Get("/", errorWrapper(w.getAllRecipes))
 		r.Route("/{id}", func(r chi.Router) {

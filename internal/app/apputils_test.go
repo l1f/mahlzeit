@@ -5,9 +5,9 @@ import (
 	"testing"
 	"time"
 
-	"codeberg.org/mahlzeit/mahlzeit/db/queries"
-	"codeberg.org/mahlzeit/mahlzeit/internal/pghelper"
-	"codeberg.org/mahlzeit/mahlzeit/internal/testhelper"
+	"github.com/l1f/mahlzeit/db/queries"
+	"github.com/l1f/mahlzeit/internal/pghelper"
+	"github.com/l1f/mahlzeit/internal/testhelper"
 	"github.com/alecthomas/assert/v2"
 	"github.com/jackc/pgx/v4/pgxpool"
 	"go.uber.org/zap/zaptest"

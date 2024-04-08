@@ -7,7 +7,7 @@ import (
 	"html/template"
 	"strings"
 
-	"codeberg.org/mahlzeit/mahlzeit/web/assets/icons"
+	"github.com/l1f/mahlzeit/web/assets/icons"
 	"github.com/google/uuid"
 	"github.com/speps/go-hashids/v2"
 )

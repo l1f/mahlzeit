@@ -3,7 +3,7 @@ package app
 import (
 	"testing"
 
-	"codeberg.org/mahlzeit/mahlzeit/internal/testhelper"
+	"github.com/l1f/mahlzeit/internal/testhelper"
 	"github.com/alecthomas/assert/v2"
 )
 
