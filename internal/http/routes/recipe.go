@@ -1,6 +1,7 @@
 package routes
 
 import (
+	"context"
 	"fmt"
 	"net/http"
 	"strconv"
@@ -9,18 +10,18 @@ import (
 	"github.com/l1f/mahlzeit/internal/app"
 	"github.com/l1f/mahlzeit/internal/http/htmx"
 	"github.com/l1f/mahlzeit/internal/http/httpreq"
+	"github.com/l1f/mahlzeit/web/templates/pages/recipes"
 	"github.com/robfig/bind"
 )
 
 func (a appWrapper) getAllRecipes(w http.ResponseWriter, r *http.Request) error {
-	_, err := a.app.GetAllRecipes(r.Context())
+	allRecipes, err := a.app.GetAllRecipes(r.Context())
 	if err != nil {
 		return err
 	}
-	//if err := a.app.Templates.RenderPage(w, "recipes/index.tmpl", recipes); err != nil {
-	//	return err
-	//}
-	return nil
+
+	component := recipes.AllRecipes(allRecipes)
+	return component.Render(context.TODO(), w)
 }
 
 func (a appWrapper) getSingleRecipe(w http.ResponseWriter, r *http.Request) error {
