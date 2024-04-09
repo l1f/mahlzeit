@@ -45,12 +45,54 @@ templ incredientList(ingredients []app.Ingredient) {
 		for _, incredient := range ingredients {
 			<!-- TODO: round amount  -->
 			<li>
-				{ fmt.Sprintf("%f", incredient.Amount) }
+				{ fmt.Sprintf("%.2f", incredient.Amount) }
 				{ incredient.UnitName }
 				{ incredient.Name }
 			</li>
 		}
 	</ul>
+}
+
+templ recipeDescription(description string) {
+	<section>
+		<h2 class="sr-only">Beschreibung</h2>
+		<p class="text-lg italic leading-relaxed">
+			{ description }
+		</p>
+	</section>
+}
+
+templ preperationStreps(steps []app.Step) {
+	<section class="mt-8">
+		<h2 class="mb-2 text-xl font-semibold">Zubereitung</h2>
+		<ol class="list-decimal">
+			<li class="py-4 odd:border-y">
+				for _, step := range steps {
+					<div class="mb-1 flex flex-row items-center text-sm text-neutral-600">
+						<!-- TOOD: clock icon -->
+						<span class="sr-only">Zeit:</span>
+						<span class="m1-1">{ step.Time.String() }</span>
+					</div>
+					<div class="mb-6">
+						<p class="text-sm font-semibold">Zutaten</p>
+						<ul class="text-sm text-neutral-600">
+							for _, ingredient := range step.Ingredients {
+								<li>
+									{ fmt.Sprintf("%.2f", ingredient.Amount) }
+									{ ingredient.UnitName }
+									{ ingredient.Name  }
+									if ingredient.Note != "" {
+										{ ingredient.Note }
+									}
+								</li>
+							}
+						</ul>
+					</div>
+					<p class="mt-2">{ step.Instruction  }</p>
+				}
+			</li>
+		</ol>
+	</section>
 }
 
 templ SingleRecipe(recipe app.Recipe) {
@@ -69,42 +111,8 @@ templ SingleRecipe(recipe app.Recipe) {
 			</section>
 		</aside>
 		<main class="col-span-2">
-			<section>
-				<h2 class="sr-only">Beschreibung</h2>
-				<p class="text-lg italic leading-relaxed">
-					{ recipe.Description }
-				</p>
-			</section>
-			<section class="mt-8">
-				<h2 class="mb-2 text-xl font-semibold">Zubereitung</h2>
-				<ol class="list-decimal">
-					<li class="py-4 odd:border-y">
-						for _, step := range recipe.Steps {
-							<div class="mb-1 flex flex-row items-center text-sm text-neutral-600">
-								<!-- TOOD: clock icon -->
-								<span class="sr-only">Zeit:</span>
-								<span class="m1-1">{ step.Time.String() }</span>
-							</div>
-							<div class="mb-6">
-								<p class="text-sm font-semibold">Zutaten</p>
-								<ul class="text-sm text-neutral-600">
-									for _, ingredient := range recipe.Ingredients {
-										<li>
-											{ fmt.Sprintf("%f", ingredient.Amount) }
-											{ ingredient.UnitName }
-											{ ingredient.Name  }
-											if ingredient.Note != "" {
-												{ ingredient.Note }
-											}
-										</li>
-									}
-								</ul>
-							</div>
-							<p class="mt-2">{ step.Instruction  }</p>
-						}
-					</li>
-				</ol>
-			</section>
+			@recipeDescription(recipe.Description)
+			@preperationStreps(recipe.Steps)
 		</main>
 	}
 }
