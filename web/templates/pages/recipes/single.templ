@@ -1,0 +1,110 @@
+package recipes
+
+import "github.com/l1f/mahlzeit/web/templates"
+import "github.com/l1f/mahlzeit/internal/app"
+import "fmt"
+
+templ singleRecipeLayout(recipe app.Recipe) {
+	@templates.Base(recipe.Name) {
+		@templates.Header() {
+			<div class="align-center flex flex-row">
+				<h1>{ recipe.Name }</h1>
+				<a class="btn m1-4" href={ templ.URL(fmt.Sprintf("/recipes/%d/edit", recipe.ID)) }>Bearbeiten</a>
+			</div>
+			<p class="mt-2 text-sm">
+				erstellt am:
+				<time>{ templates.DateToStr(recipe.CreatedAt)  }</time>
+			</p>
+		}
+		<div class="grid grid-cols-3 gap-4">
+			{ children... }
+		</div>
+	}
+}
+
+templ servingsForm(servings int, description string) {
+	<form method="get">
+		<label for="servings_number" class="sr-only">
+			{ description }:
+		</label>
+		<input
+			id="servings_number"
+			name="servings"
+			type="number"
+			value={ templates.IntToStr(servings) }
+			min="1"
+			hx-get
+			hx-target="body"
+			placeholder="Anzahl der Portionen"
+		/>
+	</form>
+}
+
+templ incredientList(ingredients []app.Ingredient) {
+	<ul class="list-disc">
+		for _, incredient := range ingredients {
+			<!-- TODO: round amount  -->
+			<li>
+				{ fmt.Sprintf("%f", incredient.Amount) }
+				{ incredient.UnitName }
+				{ incredient.Name }
+			</li>
+		}
+	</ul>
+}
+
+templ SingleRecipe(recipe app.Recipe) {
+	@singleRecipeLayout(recipe) {
+		<aside>
+			<section>
+				<h2 class="mb-2 text-xl font-semibold">Portionen</h2>
+				<div class="flex flex-row items-center gap-2">
+					@servingsForm(recipe.Servings, recipe.Description)
+					<span>{ recipe.ServingsDescription }</span>
+				</div>
+			</section>
+			<section class="mt-8">
+				<h2 class="mb-2 text-xl font-semibold">Zutaten</h2>
+				@incredientList(recipe.Ingredients)
+			</section>
+		</aside>
+		<main class="col-span-2">
+			<section>
+				<h2 class="sr-only">Beschreibung</h2>
+				<p class="text-lg italic leading-relaxed">
+					{ recipe.Description }
+				</p>
+			</section>
+			<section class="mt-8">
+				<h2 class="mb-2 text-xl font-semibold">Zubereitung</h2>
+				<ol class="list-decimal">
+					<li class="py-4 odd:border-y">
+						for _, step := range recipe.Steps {
+							<div class="mb-1 flex flex-row items-center text-sm text-neutral-600">
+								<!-- TOOD: clock icon -->
+								<span class="sr-only">Zeit:</span>
+								<span class="m1-1">{ step.Time.String() }</span>
+							</div>
+							<div class="mb-6">
+								<p class="text-sm font-semibold">Zutaten</p>
+								<ul class="text-sm text-neutral-600">
+									for _, ingredient := range recipe.Ingredients {
+										<li>
+											{ fmt.Sprintf("%f", ingredient.Amount) }
+											{ ingredient.UnitName }
+											{ ingredient.Name  }
+											if ingredient.Note != "" {
+												{ ingredient.Note }
+											}
+										</li>
+									}
+								</ul>
+							</div>
+							<p class="mt-2">{ step.Instruction  }</p>
+						}
+					</li>
+				</ol>
+			</section>
+		</main>
+	}
+}

@@ -26,21 +26,22 @@ func (a appWrapper) getAllRecipes(w http.ResponseWriter, r *http.Request) error 
 
 func (a appWrapper) getSingleRecipe(w http.ResponseWriter, r *http.Request) error {
 	id := httpreq.MustIDParam(r, "id")
-	res, err := a.app.GetSingleRecipe(r.Context(), id)
+	recipe, err := a.app.GetSingleRecipe(r.Context(), id)
 	if err != nil {
 		return err
 	}
 
 	if servingsParam := r.URL.Query().Get("servings"); servingsParam != "" {
 		// We deliberately ignore any errors, and "handle" them by checking whether we have a valid int.
-		p, _ := strconv.Atoi(servingsParam)
-		res.WithServings(p)
+		p, err := strconv.Atoi(servingsParam)
+		if err != nil {
+			return fmt.Errorf("Invalid 'servings' parameter: %w", err)
+		}
+		recipe.WithServings(p)
 	}
 
-	// if err := a.app.Templates.RenderPage(w, "recipes/single.tmpl", res); err != nil {
-	//	return err
-	//}
-	return nil
+	component := recipes.SingleRecipe(*recipe)
+	return component.Render(context.TODO(), w)
 }
 
 func (a appWrapper) getEditSingleRecipe(w http.ResponseWriter, r *http.Request) error {

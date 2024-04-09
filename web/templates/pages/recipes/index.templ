@@ -4,11 +4,15 @@ import "github.com/l1f/mahlzeit/web/templates"
 import "github.com/l1f/mahlzeit/internal/app"
 import "fmt"
 
+
+templ header() {
+  <h1>Liste aller Rezepte</h1>
+}
+
 templ AllRecipes(recipes []app.ListEntry) {
-  @templates.Base("Liste aller Rezepte") {
+  @templates.DefaultLayout("Liste aller Rezepte") {
     <ul class="list-inside list-disc">
       for _, recipe := range recipes {
-      r := 
       <li>
         <a href={ templ.URL(fmt.Sprintf("/recipes/%d", recipe.ID)) }>{ recipe.Name }</a>
       </li>
