@@ -1,3 +1,10 @@
+
+
+# ATTENTION
+
+Mahlzeit is currently very unfinished and buggy. 
+It should not be used, although it is not entirely clear to me why anyone would want to use it at the moment. 
+
 # *Mahlzeit* -- manage recipes with your friends!
 
 *Mahlzeit* (German word for *meal* or ) is a recipe manager that is intended for smaller communities.
