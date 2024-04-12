@@ -5,8 +5,8 @@ import (
 	"fmt"
 	"time"
 
-	"codeberg.org/mahlzeit/mahlzeit/db/queries"
 	"github.com/jackc/pgtype"
+	"github.com/l1f/mahlzeit/db/queries"
 )
 
 func (app *Application) GetAllRecipes(ctx context.Context) ([]ListEntry, error) {
@@ -45,6 +45,7 @@ func (app *Application) GetSingleRecipe(ctx context.Context, id int) (*Recipe, e
 		Servings:            int(base.Servings),
 		ServingsDescription: base.ServingsDescription,
 	}
+
 	_ = base.WorkingTime.AssignTo(&res.WorkingTime)
 	_ = base.WaitingTime.AssignTo(&res.WaitingTime)
 
@@ -72,6 +73,7 @@ func (app *Application) GetSingleRecipe(ctx context.Context, id int) (*Recipe, e
 			RecipeID:    res.ID,
 			Instruction: step.Instruction,
 		}
+
 		_ = step.StepTime.AssignTo(&s.Time)
 
 		if step.Ingredients.Status == pgtype.Present {
@@ -157,6 +159,7 @@ func (r *Recipe) WithServings(servings int) {
 		ingredient.Amount = ingredient.Amount / baseServings * newServings
 		r.Ingredients[i] = ingredient
 	}
+
 	for i, step := range r.Steps {
 		for j, ingredient := range step.Ingredients {
 			ingredient.Amount = ingredient.Amount / baseServings * newServings
@@ -177,6 +180,7 @@ type Ingredient struct {
 	RecipeID int
 	StepID   int
 }
+
 type Step struct {
 	ID          int
 	RecipeID    int
@@ -184,6 +188,7 @@ type Step struct {
 	Time        time.Duration
 	Ingredients []Ingredient
 }
+
 type Unit struct {
 	ID   int
 	Name string

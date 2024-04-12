@@ -1,7 +1,0 @@
-<component name="ProjectRunConfigurationManager">
-  <configuration default="false" name="Run web development workflow" type="CompoundRunConfigurationType">
-    <toRun name="Build application" type="GoApplicationRunConfiguration" />
-    <toRun name="Start Vite" type="js.build_tools.npm" />
-    <method v="2" />
-  </configuration>
-</component>

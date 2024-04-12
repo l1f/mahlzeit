@@ -1,0 +1,37 @@
+package templates
+
+templ Base(title string) {
+	<!DOCTYPE html>
+	<html lang="de">
+		<head>
+			<meta charset="UTF-8"/>
+			<meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+			<!-- TODO: Move this to local file @build  -->
+			<script src="https://unpkg.com/htmx.org@1.9.11" integrity="sha384-0gxUXCCR8yv9FM2b+U3FDbsKthCI66oH5IA9fHppQq9DDMHuMauqq1ZHBpJxQ0J0" crossorigin="anonymous"></script>
+			<link rel="stylesheet" href="/dist/styles.css"/>
+			<title>{ title } | Mahlzeit</title>
+		</head>
+		<body>
+			{ children... }
+		</body>
+	</html>
+}
+
+templ Header() {
+	<header class="bg-neutral-100 pt-12 pb-8">
+		<div class="page-header container mx-auto">
+			{ children... }
+		</div>
+	</header>
+}
+
+templ DefaultLayout(title string) {
+	@Base(title) {
+		@Header() {
+			<h1 class="text-xl">{ title }</h1>
+		}
+		<main class="container mx-auto py-12">
+			{ children... }
+		</main>
+	}
+}

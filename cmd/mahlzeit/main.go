@@ -11,13 +11,11 @@ import (
 	"syscall"
 	"time"
 
-	"codeberg.org/mahlzeit/mahlzeit/db/queries"
-	"codeberg.org/mahlzeit/mahlzeit/internal/app"
-	"codeberg.org/mahlzeit/mahlzeit/internal/http/routes"
-	"codeberg.org/mahlzeit/mahlzeit/internal/templates"
-	"codeberg.org/mahlzeit/mahlzeit/web"
 	"github.com/BurntSushi/toml"
 	"github.com/jackc/pgx/v4/pgxpool"
+	"github.com/l1f/mahlzeit/db/queries"
+	"github.com/l1f/mahlzeit/internal/app"
+	"github.com/l1f/mahlzeit/internal/http/routes"
 	"go.uber.org/zap"
 )
 
@@ -71,14 +69,10 @@ func run(ctx context.Context, args []string) error {
 	}
 
 	app := &app.Application{
-		Templates: templates.NewTemplates(cfg.Web.TemplateDir),
-		Queries:   queries.New(pool),
-		Logger:    logger,
+		Queries: queries.New(pool),
+		Logger:  logger,
 	}
 
-	if err := web.ServeAssets(ctx, cfg.Web.TemplateDir); err != nil {
-		return fmt.Errorf("starting development asset server: %w", err)
-	}
 	logger.Info("starting server", zap.String("endpoint", cfg.Web.Endpoint))
 	h := &http.Server{
 		BaseContext: func(net.Listener) context.Context {

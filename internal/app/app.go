@@ -1,17 +1,15 @@
 package app
 
 import (
-	"codeberg.org/mahlzeit/mahlzeit/db/queries"
-	"codeberg.org/mahlzeit/mahlzeit/internal/templates"
+	"github.com/l1f/mahlzeit/db/queries"
 	"go.uber.org/zap"
 )
 
 // Application holds the required resources for the application.
 // This includes, but is not limited, to loggers, databases, cache handlers, etc.
 type Application struct {
-	Templates templates.Templates
-	Queries   *queries.Queries
-	Logger    *zap.Logger
+	Queries *queries.Queries
+	Logger  *zap.Logger
 }
 
 type Configuration struct {

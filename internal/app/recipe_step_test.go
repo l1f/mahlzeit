@@ -5,8 +5,8 @@ import (
 	"testing"
 	"time"
 
-	"codeberg.org/mahlzeit/mahlzeit/db/queries"
-	"codeberg.org/mahlzeit/mahlzeit/internal/testhelper"
+	"github.com/l1f/mahlzeit/db/queries"
+	"github.com/l1f/mahlzeit/internal/testhelper"
 	"github.com/alecthomas/assert/v2"
 	"github.com/carlmjohnson/resperr"
 	"github.com/jackc/pgtype"

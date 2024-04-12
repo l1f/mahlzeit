@@ -1,60 +1,60 @@
 package routes
 
 import (
+	"context"
 	"fmt"
 	"net/http"
 	"strconv"
 	"time"
 
-	"codeberg.org/mahlzeit/mahlzeit/internal/app"
-	"codeberg.org/mahlzeit/mahlzeit/internal/http/htmx"
-	"codeberg.org/mahlzeit/mahlzeit/internal/http/httpreq"
 	"github.com/go-chi/chi/v5"
+	"github.com/google/uuid"
+	"github.com/l1f/mahlzeit/internal/app"
+	"github.com/l1f/mahlzeit/internal/http/htmx"
+	"github.com/l1f/mahlzeit/internal/http/httpreq"
+	"github.com/l1f/mahlzeit/web/templates/pages/recipes"
 	"github.com/robfig/bind"
 )
 
 func (a appWrapper) getAllRecipes(w http.ResponseWriter, r *http.Request) error {
-	recipes, err := a.app.GetAllRecipes(r.Context())
+	allRecipes, err := a.app.GetAllRecipes(r.Context())
 	if err != nil {
 		return err
 	}
-	if err := a.app.Templates.RenderPage(w, "recipes/index.tmpl", recipes); err != nil {
-		return err
-	}
-	return nil
+
+	component := recipes.AllRecipes(allRecipes)
+	return component.Render(context.TODO(), w)
 }
 
 func (a appWrapper) getSingleRecipe(w http.ResponseWriter, r *http.Request) error {
 	id := httpreq.MustIDParam(r, "id")
-	res, err := a.app.GetSingleRecipe(r.Context(), id)
+	recipe, err := a.app.GetSingleRecipe(r.Context(), id)
 	if err != nil {
 		return err
 	}
 
 	if servingsParam := r.URL.Query().Get("servings"); servingsParam != "" {
-		// We deliberately ignore any errors, and "handle" them by checking whether we have a valid int.
-		p, _ := strconv.Atoi(servingsParam)
-		res.WithServings(p)
+		p, err := strconv.Atoi(servingsParam)
+		if err != nil {
+			return fmt.Errorf("Invalid 'servings' parameter: %w", err)
+		}
+		recipe.WithServings(p)
 	}
 
-	if err := a.app.Templates.RenderPage(w, "recipes/single.tmpl", res); err != nil {
-		return err
-	}
-	return nil
+	component := recipes.SingleRecipe(*recipe)
+	return component.Render(context.TODO(), w)
 }
 
 func (a appWrapper) getEditSingleRecipe(w http.ResponseWriter, r *http.Request) error {
 	id := httpreq.MustIDParam(r, "id")
 
-	res, err := a.app.GetSingleRecipe(r.Context(), id)
+	recipe, err := a.app.GetSingleRecipe(r.Context(), id)
 	if err != nil {
 		return err
 	}
 
-	if err := a.app.Templates.RenderPage(w, "recipes/edit.tmpl", res); err != nil {
-		return err
-	}
-	return nil
+	component := recipes.EditRecipe(*recipe)
+	return component.Render(context.TODO(), w)
 }
 
 func (a appWrapper) postEditSingleRecipe(w http.ResponseWriter, r *http.Request) error {
@@ -93,13 +93,12 @@ func (a appWrapper) getAddStepToRecipe(w http.ResponseWriter, r *http.Request) e
 		panic("progressive enhancement is not implemented yet")
 	}
 
-	if err := a.app.Templates.RenderTemplate(w, "recipes/edit.tmpl", "single_step_edit", app.Step{
-		RecipeID: httpreq.MustIDParam(r, "id"),
-	}); err != nil {
-		return err
-	}
+	id := httpreq.MustIDParam(r, "id")
 
-	return nil
+	component := recipes.EditSingleStep(app.Step{
+		RecipeID: id,
+	})
+	return component.Render(context.TODO(), w)
 }
 
 func (a appWrapper) getSingleStep(w http.ResponseWriter, r *http.Request) error {
@@ -117,11 +116,8 @@ func (a appWrapper) getSingleStep(w http.ResponseWriter, r *http.Request) error 
 		return err
 	}
 
-	if err := a.app.Templates.RenderTemplate(w, "recipes/edit.tmpl", "single_step", step); err != nil {
-		return err
-	}
-
-	return nil
+	component := recipes.SingleStep(step)
+	return component.Render(context.TODO(), w)
 }
 
 func (a appWrapper) setStepToEditMode(w http.ResponseWriter, r *http.Request) error {
@@ -134,11 +130,8 @@ func (a appWrapper) setStepToEditMode(w http.ResponseWriter, r *http.Request) er
 		return err
 	}
 
-	if err := a.app.Templates.RenderTemplate(w, "recipes/edit.tmpl", "single_step_edit", step); err != nil {
-		return err
-	}
-
-	return nil
+	component := recipes.EditSingleStep(step)
+	return component.Render(context.TODO(), w)
 }
 
 func (a appWrapper) updateRecipeStep(w http.ResponseWriter, r *http.Request) error {
@@ -152,9 +145,13 @@ func (a appWrapper) updateRecipeStep(w http.ResponseWriter, r *http.Request) err
 		Instruction string
 		Time        string
 	}{}
+
 	if err := bind.Request(r).Field(&data.Instruction, "instruction"); err != nil {
 		return err
 	}
+
+	fmt.Println(data.Instruction))
+
 	if err := bind.Request(r).Field(&data.Time, "time"); err != nil {
 		return err
 	}
@@ -166,6 +163,7 @@ func (a appWrapper) updateRecipeStep(w http.ResponseWriter, r *http.Request) err
 		Instruction: data.Instruction,
 		Time:        dur,
 	}
+
 	if stepID != 0 {
 		if err := a.app.UpdateStep(r.Context(), *step); err != nil {
 			return fmt.Errorf("updating step %d: %w", stepID, err)
@@ -177,12 +175,13 @@ func (a appWrapper) updateRecipeStep(w http.ResponseWriter, r *http.Request) err
 	}
 
 	if htmx.IsHTMXRequest(r) {
-		if err := a.app.Templates.RenderTemplate(w, "recipes/edit.tmpl", "single_step", step); err != nil {
-			return err
-		}
-	} else {
-		http.Redirect(w, r, "/recipes/"+chi.URLParam(r, "id"), http.StatusFound)
+		component := recipes.SingleStep(*step)
+		return component.Render(context.TODO(), w)
 	}
+
+	// if it not a HTMX request:
+	http.Redirect(w, r, "/recipes/"+chi.URLParam(r, "id"), http.StatusNotFound)
+
 	return nil
 }
 
@@ -197,12 +196,7 @@ func (a appWrapper) deleteRecipeStep(w http.ResponseWriter, r *http.Request) err
 }
 
 func (a appWrapper) postAddNewRecipeStepIngredient(w http.ResponseWriter, r *http.Request) error {
-	data := struct {
-		Ingredients []app.Ingredient
-		Units       []app.Unit
-		RecipeID    int
-		StepID      int
-	}{}
+	data := recipes.NewIngredientData{}
 
 	ingredients, err := a.app.GetAllIngredients(r.Context())
 	if err != nil {
@@ -230,13 +224,11 @@ func (a appWrapper) postAddNewRecipeStepIngredient(w http.ResponseWriter, r *htt
 	data.StepID = stepID
 
 	if htmx.IsHTMXRequest(r) {
-		if err := a.app.Templates.RenderTemplate(w, "recipes/edit.tmpl", "new_ingredient", data); err != nil {
-			return err
-		}
-	} else {
-		panic("progressive enhancement not yet implemented")
+		component := recipes.NewIngredient(data, uuid.New().String())
+		return component.Render(context.TODO(), w)
 	}
-	return nil
+
+	panic("progressive enhancement not yet implemented")
 }
 
 func (a appWrapper) postAddRecipeStepIngredient(w http.ResponseWriter, r *http.Request) error {
@@ -271,19 +263,21 @@ func (a appWrapper) postAddRecipeStepIngredient(w http.ResponseWriter, r *http.R
 	}
 
 	if htmx.IsHTMXRequest(r) {
-		if err := a.app.Templates.RenderTemplate(w, "recipes/edit.tmpl", "ingredient", app.Ingredient{
-			Name:     ingredient.Name,
-			Amount:   params.Amount,
-			Note:     params.Note,
-			StepID:   stepID,
-			RecipeID: recipeID,
-		}); err != nil {
-			return err
-		}
-	} else {
-		panic("progressive enhancement not yet implemented")
+		component := recipes.Ingredient(
+			app.Ingredient{
+				Name:     ingredient.Name,
+				Amount:   params.Amount,
+				Note:     params.Note,
+				StepID:   stepID,
+				RecipeID: recipeID,
+			},
+		)
+
+		return component.Render(context.TODO(), w)
 	}
-	return nil
+
+	panic("progressive enhancement not yet implemented")
+
 }
 
 func (a appWrapper) deleteRecipeStepIngredient(_ http.ResponseWriter, r *http.Request) error {
