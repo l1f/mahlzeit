@@ -1,8 +1,5 @@
 package templates
 
-import "strconv"
-import "time"
-
 templ Base(title string) {
 	<!DOCTYPE html>
 	<html lang="de">
@@ -23,7 +20,7 @@ templ Base(title string) {
 templ Header() {
 	<header class="bg-neutral-100 pt-12 pb-8">
 		<div class="page-header container mx-auto">
-			{children...}
+			{ children... }
 		</div>
 	</header>
 }
@@ -37,12 +34,4 @@ templ DefaultLayout(title string) {
 			{ children... }
 		</main>
 	}
-}
-
-func IntToStr(input int) string {
-	return strconv.FormatInt(int64(input), 10)
-}
-
-func DateToStr(input time.Time) string {
-	return input.Format("02.01.2006")
 }

@@ -1,0 +1,276 @@
+package recipes
+
+import "github.com/l1f/mahlzeit/web/templates"
+import "github.com/l1f/mahlzeit/internal/app"
+import "fmt"
+
+templ SingleStep(step app.Step) {
+	<li class="py-4 odd:border-y">
+		<div class="mb-1 flex flex-row items-center text-sm text-neutral-600">
+			<span class="sr-only">Zeit:</span>
+			<time class="ml-1">{ step.Time.String() }</time>
+		</div>
+		<div class="mb-6">
+			<p class="text-sm font-semibold">Zutaten:</p>
+			<ul class="text-sm text-neutral-600">
+				for _, ingredient := range step.Ingredients {
+					<li>
+						{ fmt.Sprintf("%.2f", ingredient.Amount) }
+						{ ingredient.UnitName }
+						{ ingredient.Name }
+						if ingredient.Note != "" {
+							{ ingredient.Note }
+						}
+					</li>
+				}
+			</ul>
+		</div>
+		<p class="mt-2">{ step.Instruction }</p>
+		<div class="flex flex-row gap-2">
+			<button
+				hx-post={ fmt.Sprintf("/recipes/%d/steps/%d", step.RecipeID, step.ID) }
+				class="btn btn-small"
+				hx-target="closest li"
+				hx-swap="outerHTML"
+			>
+				<span>Bearbeiten</span>
+			</button>
+		</div>
+	</li>
+}
+
+templ EditSingleStep(step app.Step) {
+	<li class="py-4">
+		<form
+			method="post"
+			hx-put={ fmt.Sprintf("/recipes/%d/steps/%d", step.RecipeID, step.ID) }
+			hx-target="closest li"
+			hx-swap="outerHTML"
+		>
+			<input type="hidden" name="step_id" value={ templates.IntToStr(step.ID) }/>
+			<div>
+				<label for={ templates.FormId("step", step.ID, "time") }>Zeit</label>
+				<input
+					type="text"
+					id={ templates.FormId("step", step.ID, "time") }
+					value={ step.Time.String() }
+					name="time"
+				/>
+			</div>
+			<div>
+				<label class="sr-only" for={ templates.FormId("step", step.ID, "instruction") }>Anweisung</label>
+				<textarea rows="5" name="instruction" id={ templates.FormId("step", step.ID, "instruction") }>
+					{ step.Instruction }
+				</textarea>
+			</div>
+			<section>
+				<h4 class="text-sm font-semibold">Zutaten</h4>
+				<ul class="list-inside list-disc" id={ fmt.Sprintf("step-%d-ingredients", step.ID) }>
+					for _, ingredients := range step.Ingredients {
+						@Ingredient(ingredients)
+					}
+				</ul>
+				<button
+					type="submit"
+					class="btn btn-small mt-2"
+					hx-post={ fmt.Sprintf("/recipes/%d/steps/%d/add_ingredient", step.RecipeID, step.ID) }
+					hx-target={ fmt.Sprintf("#step-%d-ingredients", step.ID) }
+					hx-swap="beforeend"
+				>
+					Zutat hinzufügen
+				</button>
+			</section>
+			<div class="mt-4 grid grid-cols-2 gap-4">
+				<button
+					class="btn btn-danger"
+					type="submit"
+					data-hx-delete={ fmt.Sprintf("/recipes/%d/steps/%d", step.RecipeID, step.ID) }
+					data-hx-target="closest li"
+					data-hx-confirm="Bist du sicher?"
+					data-hx-swap="outerHTML"
+				>
+					Löschen
+				</button>
+				<button
+					class="btn btn-primary"
+					type="submit"
+					data-hx-put={ fmt.Sprintf("/recipes/%d/steps/%d", step.RecipeID, step.ID) }
+					data-hx-target="closest li"
+					data-hx-swap="outerHTML"
+				>
+					Speichern
+				</button>
+			</div>
+		</form>
+	</li>
+}
+
+templ Ingredient(ingredient app.Ingredient) {
+	<li class="flex flex-row items-center justify-between py-1 odd:border-y">
+		<span>
+			{ fmt.Sprintf("%.2f", ingredient.Amount) }
+			{ ingredient.UnitName }
+			{ ingredient.Name }
+			if ingredient.Note != "" {
+				{ ingredient.Note }
+			}
+		</span>
+		<button
+			class="btn btn-danger btn-small"
+			hx-delete={ fmt.Sprintf("/recipes/%d/steps/%d/ingredients/%d", ingredient.RecipeID, ingredient.StepID, ingredient.ID) }
+			hx-target="closest li"
+			hx-swap="outerHTML"
+		>
+			<span class="sr-only">Zutat löschen </span>
+		</button>
+	</li>
+}
+
+type NewIngredientData struct {
+	Ingredients []app.Ingredient
+	Units       []app.Unit
+	RecipeID    int
+	StepID      int
+}
+
+templ NewIngredient(ingredient NewIngredientData, randomId string) {
+	<li class="block rounded-b bg-neutral-100 px-2 py-3 shadow odd:border-y">
+		<form
+			hx-post={ fmt.Sprintf("/recipes/%d/steps/%d/ingredients", ingredient.RecipeID, ingredient.StepID) }
+			hx-boost="true"
+			class="grid grid-cols-2 gap-2"
+			hx-swap="outerHTML"
+			hx-target="closest li"
+			method="post"
+		>
+			<label
+				for={ templates.FormId(ingredient.RecipeID, templates.IntToStr(ingredient.StepID), "new_ingredient", randomId) }
+				class="sr-only"
+			>
+				Zutat
+			</label>
+			<select
+				name="Ingredient"
+				id={ templates.FormId(ingredient.RecipeID, templates.IntToStr(ingredient.StepID), "new_ingredient", randomId) }
+				class="input-element--full-width col-span-2"
+				required
+			>
+				for _,ingredient := range ingredient.Ingredients {
+					<option value={ templates.IntToStr(ingredient.ID) }>{ ingredient.Name }</option>
+				}
+			</select>
+			<div>
+				<label
+					for={ templates.FormId(ingredient.RecipeID, ingredient.StepID, "amount", randomId) }
+				>Menge</label>
+				<input
+					id={ templates.FormId(ingredient.RecipeID, templates.IntToStr(ingredient.StepID), "amount", randomId) }
+					name="Amount"
+					type="number"
+					min="0"
+					required
+				/>
+			</div>
+			<div>
+				<label
+					for={ templates.FormId(ingredient.RecipeID, ingredient.StepID, "new_ingredient", "unit", randomId) }
+				>Einheit</label>
+				<select
+					id={ templates.FormId(ingredient.RecipeID, ingredient.StepID, "new_ingredient", "unit", randomId) }
+					name="Unit"
+				>
+					<option value="0">(ohne Einheit)</option>
+					for _, unit := range ingredient.Units {
+						<option value={ templates.IntToStr(unit.ID) }>{ unit.Name }</option>
+					}
+				</select>
+			</div>
+			<div class="col-span-2">
+				<label
+					for={ templates.FormId(ingredient.RecipeID, ingredient.StepID, "new_ingredient", randomId, "note") }
+				>Notiz</label>
+				<input
+					id={ templates.FormId(ingredient.RecipeID, ingredient.StepID, "new_ingredient", randomId, "note") }
+					type="text"
+					name="Note"
+					maxlength="100"
+					class="input-element--full-width"
+				/>
+			</div>
+			<button type="submit" class="btn--primary">Speichern</button>
+		</form>
+	</li>
+}
+
+templ EditRecipe(recipe app.Recipe) {
+	@templates.DefaultLayout(fmt.Sprintf("%s bearbeiten", recipe.Name)) {
+		<div class="grid grid-cols-3 gap-4">
+			<aside>
+				<form method="post" class="flex flex-col gap-4">
+					<div>
+						<label for="recipe_name">Name</label>
+						<input
+							id="recipe_name"
+							name="Name"
+							type="text"
+							required
+							value={ recipe.Name }
+						/>
+					</div>
+					<div>
+						<label for="servings">Portionen</label>
+						<input
+							id="servings"
+							name="Servings"
+							type="number"
+							required
+							value={ templates.IntToStr(recipe.Servings) }
+							min="1"
+						/>
+					</div>
+					<div>
+						<label for="servings_description">Portions-Beschreibung</label>
+						<input
+							id="servings_description"
+							name="ServingsDescription"
+							aria-describedby="servings_description_note"
+							type="text"
+							value={ recipe.ServingsDescription }
+						/>
+						<p class="input-element__note" id="servings_description_note">
+							<!-- {{ icon "info" }} -->
+							Die Beschreibung kann dafür genutzt werden, um etwas anderes als
+							"Portionen" anzeigen zu lassen. Beispielsweise könnte hier "Muffins"
+							stehen, sodass da nicht "{  templates.IntToStr(recipe.Servings) } Portionen" steht, sondern
+							"{ templates.IntToStr(recipe.Servings) } Muffins".
+						</p>
+					</div>
+					<div>
+						<label for="description">Zusammenfassung</label>
+						<textarea rows="5" id="description" name="Description">
+							{ recipe.Description }
+						</textarea>
+					</div>
+					<button type="submit" class="btn--primary self-start">Speichern</button>
+				</form>
+			</aside>
+			<main>
+				<h2 class="mb-2 text-xl font-semibold">Schritte</h2>
+				<ol id="steps">
+					for _, step := range recipe.Steps {
+						@SingleStep(step)
+					}
+				</ol>
+				<button
+					type="button"
+					hx-get="./edit/add_step"
+					hx-swap="beforeend"
+					hx-target="#steps"
+					class="btn btn-small ml-4"
+				>
+					<span>Schritt hinzufügen</span>
+				</button>
+			</main>
+		</div>
+	}
+}

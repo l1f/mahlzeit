@@ -40,14 +40,14 @@ templ servingsForm(servings int, description string) {
 	</form>
 }
 
-templ incredientList(ingredients []app.Ingredient) {
+templ ingredientList(ingredients []app.Ingredient) {
 	<ul class="list-disc">
-		for _, incredient := range ingredients {
+		for _, ingredient := range ingredients {
 			<!-- TODO: round amount  -->
 			<li>
-				{ fmt.Sprintf("%.2f", incredient.Amount) }
-				{ incredient.UnitName }
-				{ incredient.Name }
+				{ fmt.Sprintf("%.2f", ingredient.Amount) }
+				{ ingredient.UnitName }
+				{ ingredient.Name }
 			</li>
 		}
 	</ul>
@@ -62,7 +62,7 @@ templ recipeDescription(description string) {
 	</section>
 }
 
-templ preperationStreps(steps []app.Step) {
+templ preperationSteps(steps []app.Step) {
 	<section class="mt-8">
 		<h2 class="mb-2 text-xl font-semibold">Zubereitung</h2>
 		<ol class="list-decimal">
@@ -107,12 +107,12 @@ templ SingleRecipe(recipe app.Recipe) {
 			</section>
 			<section class="mt-8">
 				<h2 class="mb-2 text-xl font-semibold">Zutaten</h2>
-				@incredientList(recipe.Ingredients)
+				@ingredientList(recipe.Ingredients)
 			</section>
 		</aside>
 		<main class="col-span-2">
 			@recipeDescription(recipe.Description)
-			@preperationStreps(recipe.Steps)
+			@preperationSteps(recipe.Steps)
 		</main>
 	}
 }
