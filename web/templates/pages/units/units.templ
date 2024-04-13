@@ -1,0 +1,112 @@
+package units
+
+import "github.com/l1f/mahlzeit/internal/app"
+import "github.com/l1f/mahlzeit/web/templates"
+import "fmt"
+
+// TODO: Make design prettier
+// TODO: Catch errors on delete
+// TODO: Remove "löschen" button, if unit is not deleteable
+//       A unit cannot delete when it is in use by a recipe
+
+templ ListUnits(units []app.Unit) {
+	@templates.DefaultLayout("Unit overview") {
+		@NewUnitForm()
+		@unitsList(units)
+	}
+}
+
+templ removeButton(unitId int) {
+	<button
+		class="flex text-red-500 border-2 border-red-500 p-2 rounded-lg"
+		data-hx-delete={ fmt.Sprintf("/units/%d", unitId) }
+		data-hx-target="closest li"
+		data-hx-confirm="Bist du sicher?"
+		data-hx-swap="outerHTML"
+	>
+		@removeSvg()
+		<span>Löschen</span>
+	</button>
+ }
+
+templ removeSvg() {
+	<svg
+		class="h-6 w-6 text-red-500"
+		viewBox="0 0 24 24"
+		fill="none"
+		stroke="currentColor"
+		stroke-width="2"
+		stroke-linecap="round"
+		stroke-linejoin="round"
+	>
+		<circle cx="12" cy="12" r="10"></circle>
+		<line x1="15" y1="9" x2="9" y2="15"></line>
+		<line x1="9" y1="9" x2="15" y2="15"></line>
+	</svg>
+}
+
+templ addSvg() {
+	<svg
+		class="h-6 w-6"
+		width="24"
+		height="24"
+		viewBox="0 0 24 24"
+		stroke-width="2"
+		stroke="currentColor"
+		fill="none"
+		stroke-linecap="round"
+		stroke-linejoin="round"
+	>
+		<path stroke="none" d="M0 0h24v24H0z"></path>
+		<circle cx="12" cy="12" r="9"></circle>
+		<line x1="9" y1="12" x2="15" y2="12"></line>
+		<line x1="12" y1="9" x2="12" y2="15"></line>
+	</svg>
+}
+
+templ addButton() {
+	<button
+		class="ml-2 border-2 border-green-500 p-2 text-green-500 hover:text-white hover:bg-green-500 rounded-lg flex"
+	>
+		@addSvg()
+		<span>Hinzufügen</span>
+	</button>
+}
+
+templ unitsList(units []app.Unit) {
+	<ul class="rounded overflow-hidden" id="unit_list">
+		for _, unit := range units {
+			@ListItem(unit)
+		}
+	</ul>
+}
+
+templ ListItem(unit app.Unit) {
+	<li class="p-2 rounded-lg">
+		<div class="flex align-middle flex-row justify-between">
+			<div class="p-2">
+				<p class="text-lg text-black">{ unit.Name }</p>
+			</div>
+			@removeButton(unit.ID)
+		</div>
+		<hr class="mt-2"/>
+	</li>
+}
+
+templ NewUnitForm() {
+	<form
+		hx-post="/units"
+		hx-target="#unit_list"
+		hx-swap="afterbegin"
+	>
+		<div class="mt-4 w-full flex">
+			<input
+				class="border-b-2 border-gray-500 w-full text-black"
+				type="text"
+				placeholder="Neue Einheit..."
+				name="name"
+			/>
+			@addButton()
+		</div>
+	</form>
+}
