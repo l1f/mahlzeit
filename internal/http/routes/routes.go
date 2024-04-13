@@ -68,6 +68,16 @@ func All(c *app.Application) *chi.Mux {
 		})
 	})
 
+	r.Route("/units", func(r chi.Router) {
+		r.Get("/", errorWrapper(w.getAllUnits))
+		r.Post("/", errorWrapper(w.postUnit))
+		r.Route("/{id}", func(r chi.Router) {
+			r.Use(validateID("id"))
+
+			r.Delete("/", errorWrapper(w.deleteUnit))
+		})
+	})
+
 	return r
 }
 

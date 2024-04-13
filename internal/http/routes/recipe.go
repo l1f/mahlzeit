@@ -150,8 +150,6 @@ func (a appWrapper) updateRecipeStep(w http.ResponseWriter, r *http.Request) err
 		return err
 	}
 
-	fmt.Println(data.Instruction))
-
 	if err := bind.Request(r).Field(&data.Time, "time"); err != nil {
 		return err
 	}
